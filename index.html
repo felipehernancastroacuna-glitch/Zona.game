@@ -1,0 +1,231 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zona Gamer</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Arial,sans-serif;
+  background:#101020;color:white;
+}
+header{
+  text-align:center;padding:28px 12px;
+  background:linear-gradient(135deg,#6c28e8,#00b9d4);
+}
+header h1{margin:0;font-size:34px}
+header p{margin-bottom:0}
+nav{
+  display:flex;justify-content:center;flex-wrap:wrap;
+  gap:10px;padding:15px;background:#19192d;
+}
+button{
+  border:0;border-radius:10px;padding:12px 16px;
+  font-size:16px;font-weight:bold;cursor:pointer;
+}
+nav button,.primary{background:#773cff;color:white}
+main{max-width:900px;margin:auto;padding:18px}
+.card{
+  background:#1c1c33;border:1px solid #343454;
+  border-radius:16px;padding:22px;margin-bottom:20px;
+  text-align:center;
+}
+h2{color:#bca2ff}
+input{
+  width:100%;max-width:220px;padding:13px;
+  border-radius:9px;border:1px solid #666;
+  font-size:18px;margin:8px;background:#fff;
+}
+.result{color:#66f2ce;min-height:26px;font-weight:bold}
+.choices{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.choice{font-size:30px;background:#303052}
+.memory{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:8px;max-width:360px;margin:18px auto;
+}
+.tile{
+  aspect-ratio:1;font-size:28px;
+  background:#773cff;color:white;padding:0;
+}
+footer{text-align:center;color:#aaa;padding:20px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎮 ZONA GAMER</h1>
+  <p>¡Juega, diviértete y supera tus récords!</p>
+</header>
+
+<nav>
+  <button onclick="ir('adivina')">🎯 Adivina</button>
+  <button onclick="ir('ppt')">✊ Piedra</button>
+  <button onclick="ir('memoria')">🧠 Memoria</button>
+</nav>
+
+<main>
+<section class="card">
+  <h2>🏆 Tu puntuación</h2>
+  <p id="score">Puntos: 0</p>
+  <button onclick="resetScore()">Reiniciar puntos</button>
+</section>
+
+<section class="card" id="adivina">
+  <h2>🎯 Adivina el número</h2>
+  <p>Estoy pensando en un número del 1 al 20.</p>
+  <input id="numero" type="number" min="1" max="20"
+  placeholder="Escribe un número">
+  <br>
+  <button class="primary" onclick="guess()">Comprobar</button>
+  <button onclick="newNumber()">Nuevo juego</button>
+  <p class="result" id="rGuess"></p>
+  <p id="attempts">Intentos: 0</p>
+</section>
+
+<section class="card" id="ppt">
+  <h2>✊ Piedra, papel o tijera</h2>
+  <p>Elige tu jugada.</p>
+  <div class="choices">
+    <button class="choice" onclick="play('Piedra')">✊</button>
+    <button class="choice" onclick="play('Papel')">✋</button>
+    <button class="choice" onclick="play('Tijera')">✌️</button>
+  </div>
+  <p id="rPpt" class="result">¡Que comience el juego!</p>
+</section>
+
+<section class="card" id="memoria">
+  <h2>🧠 Memoria de colores</h2>
+  <p>Encuentra las parejas iguales.</p>
+  <p id="moves">Movimientos: 0</p>
+  <div class="memory" id="board"></div>
+  <p id="rMemory" class="result"></p>
+  <button class="primary" onclick="startMemory()">Reiniciar memoria</button>
+</section>
+</main>
+
+<footer>🎮 Zona Gamer · Hecho con HTML, CSS y JavaScript</footer>
+
+<script>
+let points = 0;
+function addPoints(n){
+  points = Math.max(0,points+n);
+  document.getElementById('score').textContent='Puntos: '+points;
+}
+function resetScore(){
+  points=0;
+  document.getElementById('score').textContent='Puntos: 0';
+}
+function ir(id){
+  document.getElementById(id).scrollIntoView({behavior:'smooth'});
+}
+
+// JUEGO 1: ADIVINA EL NÚMERO
+let secret, tries;
+function newNumber(){
+  secret=Math.floor(Math.random()*20)+1;
+  tries=0;
+  document.getElementById('numero').value='';
+  document.getElementById('rGuess').textContent='';
+  document.getElementById('attempts').textContent='Intentos: 0';
+}
+function guess(){
+  const val=document.getElementById('numero').value;
+  const result=document.getElementById('rGuess');
+  if(val===''||Number(val)<1||Number(val)>20){
+    result.textContent='Escribe un número del 1 al 20.';
+    return;
+  }
+  tries++;
+  document.getElementById('attempts').textContent='Intentos: '+tries;
+  if(Number(val)===secret){
+    result.textContent='🎉 ¡Correcto! Lo lograste en '+tries+' intentos.';
+    addPoints(10);
+    secret=0;
+  }else if(secret===0){
+    result.textContent='Ya ganaste. Pulsa Nuevo juego.';
+  }else{
+    result.textContent=Number(val)<secret?'⬆️ El número es más alto.':'⬇️ El número es más bajo.';
+  }
+}
+newNumber();
+
+// JUEGO 2: PIEDRA, PAPEL O TIJERA
+function play(user){
+  const options=['Piedra','Papel','Tijera'];
+  const cpu=options[Math.floor(Math.random()*3)];
+  let msg='Empate 🤝';
+  if(user!==cpu){
+    if((user==='Piedra'&&cpu==='Tijera')||
+       (user==='Papel'&&cpu==='Piedra')||
+       (user==='Tijera'&&cpu==='Papel')){
+      msg='¡Ganaste! 🎉';
+      addPoints(5);
+    }else{
+      msg='Ganó la computadora 🤖';
+    }
+  }else{
+    addPoints(1);
+  }
+  document.getElementById('rPpt').textContent=
+    'Tú: '+user+' | Máquina: '+cpu+' — '+msg;
+}
+
+// JUEGO 3: MEMORIA
+const symbols=['🍎','🚀','🐱','⚽','🌟','🍕','🎲','🐸'];
+let first=null, locked=false, matched=0, moves=0, memoryGame=[];
+function startMemory(){
+  memoryGame=[...symbols,...symbols].sort(()=>Math.random()-0.5);
+  first=null;locked=false;matched=0;moves=0;
+  document.getElementById('moves').textContent='Movimientos: 0';
+  document.getElementById('rMemory').textContent='';
+  const board=document.getElementById('board');
+  board.innerHTML='';
+  memoryGame.forEach((symbol,i)=>{
+    const b=document.createElement('button');
+    b.className='tile';
+    b.textContent='❔';
+    b.dataset.index=i;
+    b.onclick=()=>flip(b,symbol);
+    board.appendChild(b);
+  });
+}
+function flip(btn,symbol){
+  if(locked||btn.dataset.done==='1'||btn===first)return;
+  btn.textContent=symbol;
+  btn.dataset.open='1';
+  if(!first){
+    first=btn;
+    return;
+  }
+  moves++;
+  document.getElementById('moves').textContent='Movimientos: '+moves;
+  if(first.textContent===btn.textContent){
+    first.dataset.done='1';
+    btn.dataset.done='1';
+    first=null;
+    matched++;
+    addPoints(2);
+    if(matched===symbols.length){
+      document.getElementById('rMemory').textContent=
+        '🏆 ¡Completaste todas las parejas!';
+      addPoints(10);
+    }
+  }else{
+    locked=true;
+    const previous=first;
+    first=null;
+    setTimeout(()=>{
+      previous.textContent='❔';
+      btn.textContent='❔';
+      previous.dataset.open='0';
+      btn.dataset.open='0';
+      locked=false;
+    },800);
+  }
+}
+startMemory();
+</script>
+</body>
+</html>
+
